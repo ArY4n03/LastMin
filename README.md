@@ -32,12 +32,10 @@ git clone https://github.com/yourusername/AskPDF-Offline.git
 cd AskPDF-Offline
 pip install -r requirements.txt
 ```
-
-```bash
+## Insalling LLM and EmbeddingModel
 # Embedding Model (for vector search) (nomic-embed-text recommended)
-
-ollama pull nomic-embed-text 
-
 # Primary LLM (choose any) (llama3.1 recommended)
+```bash
+ollama pull nomic-embed-text 
 ollama pull llama3.1
 ```
