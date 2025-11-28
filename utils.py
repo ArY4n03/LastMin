@@ -24,23 +24,27 @@ llm = OllamaLLM(model='llama3.1')
 embeddings = OllamaEmbeddings(model="nomic-embed-text")
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000,chunk_overlap=200)
 
-def load_document(entity,file=None,type="text"):
+def load_document(file=None,FileType=None):
     try:
-        if type == "text" and file:
-            doc = TextLoader(file) #loading text file
+        if FileType == "text" and file:
+            doc = TextLoader(file).load() #loading text file
             document = text_splitter.split_documents(doc) #spilliting documents into chunks
             return document
-        
-    except:
+        if FileType == "pdf":
+            doc = PyPDFLoader(file).load()
+            document = text_splitter.split_documents(doc)
+            return document
+    except Exception as e:
         msg.showwarning(message="Error Occured while loading document",title="Catastropic error")
+        print(e)
         return None
     
 
-def create_retrieval_chain(document):
-    db = Chroma.embeddings(document,embeddings) #creating Chroma database
+def create_retrieval_chain_(document):
+    db = Chroma.from_documents(document,embeddings) #creating Chroma database
     retriver = db.as_retriever()
 
     document_chain = create_stuff_documents_chain(llm,prompt)
     retriveval_chain = create_retrieval_chain(retriver,document_chain)
-
+    print("chain created")
     return retriveval_chain
