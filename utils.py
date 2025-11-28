@@ -7,7 +7,9 @@ from langchain_classic.chains.combine_documents import create_stuff_documents_ch
 from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.vectorstores import Chroma
 from tkinter import messagebox as msg
-
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 prompt = ChatPromptTemplate.from_template("""
 Answer the question based on the given context
@@ -19,9 +21,10 @@ question:{input}
 """
 )
 
-
-llm = OllamaLLM(model='llama3.1')
-embeddings = OllamaEmbeddings(model="nomic-embed-text")
+llm_name= os.getenv("local_llm")
+embedding_name = os.getenv("embedding_llm")
+llm = OllamaLLM(model=llm_name)
+embeddings = OllamaEmbeddings(model=embedding_name)
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000,chunk_overlap=200)
 
 def load_document(file=None,FileType=None):
@@ -41,10 +44,10 @@ def load_document(file=None,FileType=None):
     
 
 def create_retrieval_chain_(document):
-    db = Chroma.from_documents(document,embeddings) #creating Chroma database
-    retriver = db.as_retriever()
+    if document:
+        db = Chroma.from_documents(document,embeddings) #creating Chroma database for embedded chunks
+        retriver = db.as_retriever()
 
-    document_chain = create_stuff_documents_chain(llm,prompt)
-    retriveval_chain = create_retrieval_chain(retriver,document_chain)
-    print("chain created")
-    return retriveval_chain
+        document_chain = create_stuff_documents_chain(llm,prompt) #LLM chains combining propmt and document
+        retriveval_chain = create_retrieval_chain(retriver,document_chain) # retrieval chain
+        return retriveval_chain

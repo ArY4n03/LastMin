@@ -17,21 +17,21 @@ class Main:
         self.mainFrame = ctk.CTkFrame(master)
         self.mainFrame.place(relheight=1,relwidth=1)
 
-        #
+        #this frame will be used for all the work like asking questions and stuff
         self.WorkingFrame = ctk.CTkFrame(master)
         self.WorkingFrame.place(relheight=1,relwidth=1)
 
         self.mainFrame.tkraise()
 
         #contents of main frame
-        self.pdfBtn = ctk.CTkButton(master=self.mainFrame,text="PDF FILE",font=self.font,command= lambda: self.raiseFrame('pdf'))
-        self.pdfBtn.place(relx=0.4,rely=0.2)
 
-        self.webBtn = ctk.CTkButton(master=self.mainFrame,text="Websites",font=self.font,command= lambda: self.raiseFrame('web'))
-        self.webBtn.place(relx=0.4,rely=0.4)
+        self.label = ctk.CTkLabel(master=self.mainFrame,text="LastMin",font=(None,200))
+        self.label.place(relx=0.3,rely=0.1)
+        self.pdfBtn = ctk.CTkButton(master=self.mainFrame,text="PDF FILE",font=self.font,command= lambda: self.raiseFrame('pdf'))
+        self.pdfBtn.place(relx=0.45,rely=0.4)
 
         self.txtBtn = ctk.CTkButton(master=self.mainFrame,text="Text File",font=self.font,command= lambda: self.raiseFrame('text'))
-        self.txtBtn.place(relx=0.4,rely=0.6)
+        self.txtBtn.place(relx=0.453,rely=0.5)
 
 
         self.SourceEntry= ctk.CTkEntry(self.WorkingFrame,font=self.font,state='disabled')
@@ -49,6 +49,16 @@ class Main:
         self.AskBtn = ctk.CTkButton(self.WorkingFrame,font=self.font,text='Ask',command=self.ask)
         self.AskBtn.place(relx=0.45,rely=0.93)
 
+
+        self.BackBtn = ctk.CTkButton(self.WorkingFrame,font=self.font,text="back",command=self.clear_all)
+        self.BackBtn.place(relx=0.05,rely=0.1)
+
+        self.saveas_txt = ctk.CTkButton(self.WorkingFrame,text="save as text")
+        self.saveas_txt.place(relx=0.87,rely=0.3)
+
+        self.saveas_pdf = ctk.CTkButton(self.WorkingFrame,text="save as pdf")
+        self.saveas_pdf.place(relx=0.87,rely=0.5)
+
     def raiseFrame(self,mode):
         self.mode = mode
         self.WorkingFrame.tkraise()
@@ -59,15 +69,8 @@ class Main:
             match self.mode:
                 case "pdf":
                     self.source = filedialog.askopenfilename(defaultextension="*.pdf",filetypes=(("PDF File","*.pdf"),))
-
-                    print(self.source)
-                case "web":
-                    self.source = filedialog.askopenfilename(defaultextension="*.pdf",filetypes=(("PDF File","*.pdf"),))
-
-                    print(self.source)
                 case "text":
                     self.source = filedialog.askopenfilename(defaultextension="*.txt",filetypes=(("Text File","*.txt"),))
-                    print(self.source)
         
         if self.source:
             self.show_loading()
@@ -78,7 +81,7 @@ class Main:
             self.SourceEntry.configure(state='normal')
             self.SourceEntry.delete(0, "end")
             self.SourceEntry.insert(0, self.source)
-            self.SourceEntry.configure(state="normal")
+            self.SourceEntry.configure(state="disabled")
 
             self.document = utils.load_document(self.source,self.mode)
             self.retriveval_chain = utils.create_retrieval_chain_(self.document)
@@ -90,7 +93,7 @@ class Main:
     def ask(self):
         if self.retriveval_chain:
             #invoking query from retriveal chain
-            self.show_loading()
+            self.show_loading(text="Generating Response")
 
             threading.Thread(target=self.generate_response,daemon=True).start()
 
@@ -99,15 +102,15 @@ class Main:
         response = self.retriveval_chain.invoke({'input':self.queryArea.get('1.0','end').strip()})['answer']
             
         if response:
-
+            self.responseArea.configure(state='normal')
             self.responseArea.insert("end", "Question: " + self.queryArea.get('1.0','end').strip())
-            self.responseArea.insert("end","\nResponse : " + response)
-        
+            self.responseArea.insert("end","\nResponse : " + response + "\n")
+            self.responseArea.configure(state='disabled')
 
         self.hide_loading()
     
     def show_loading(self, text="Processing..."):
-        self.loader = ctk.CTkToplevel()          # popup window
+        self.loader = ctk.CTkToplevel()# popup window
         self.loader.geometry("300x120")
         self.loader.title("Please wait")
         self.loader.resizable(False, False)
@@ -120,11 +123,21 @@ class Main:
         progress.start()
     
     def hide_loading(self):
-        print('entered function')
         if hasattr(self,"loader"):
-            print("entered if statement")
             self.loader.destroy()
+    
+    def clear_all(self):
+        self.clear_text(self.SourceEntry)
+        self.clear_text(self.responseArea)
+        self.document = None
+        self.retriveval_chain = None
+        self.mainFrame.tkraise()
 
+    
+    def clear_text(self,widget):
+        widget.configure(state='normal')
+        widget.delete(0,'end')
+        widget.configure(state='disabled')
 if __name__ == "__main__":
     window = ctk.CTk()
     main = Main(window)
