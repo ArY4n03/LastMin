@@ -33,8 +33,8 @@ cd AskPDF-Offline
 pip install -r requirements.txt
 ```
 ## Insalling LLM and EmbeddingModel
-# Embedding Model (for vector search) (nomic-embed-text recommended)
-# Primary LLM (choose any) (llama3.1 recommended)
+#### Embedding Model (for vector search) (nomic-embed-text recommended)
+#### Primary LLM (choose any) (llama3.1 recommended)
 ```bash
 ollama pull nomic-embed-text 
 ollama pull llama3.1
