@@ -28,8 +28,8 @@ No internet required — your data stays completely private.
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/yourusername/AskPDF-Offline.git
-cd AskPDF-Offline
+git clone https://github.com/ArY4n03/LastMin.git
+cd LastMin
 pip install -r requirements.txt
 ```
 ## Insalling LLM and EmbeddingModel
